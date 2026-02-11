@@ -1,0 +1,10 @@
+build/
+doc/
+bin/
+
+.vs/
+.vsc/
+.idea/
+
+*tmp*
+*log*

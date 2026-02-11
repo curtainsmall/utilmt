@@ -1,0 +1,11 @@
+file(GLOB_RECURSE sources CONFIGURE_DEPENDS "*.hpp" "*.cpp")
+add_executable(utilmt_test ${sources})
+source_group(TREE "${CMAKE_SOURCE_DIR}" FILES ${sources})
+set_target_properties(utilmt_test PROPERTIES FOLDER "utilmt")
+target_link_libraries(utilmt_test PRIVATE utilmt)
+target_compile_features(utilmt_test PRIVATE cxx_std_20)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    add_compile_options("/MP")
+    set_property(DIRECTORY "${CMAKE_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT utilmt_test)
+endif()
