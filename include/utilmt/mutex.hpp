@@ -17,7 +17,7 @@ namespace utilmt
         void lock()
         {
             std::mutex::lock();
-            set_owner_id();
+            _set_owner_id();
         }
 
         /// @brief Try to lock the mutex
@@ -27,14 +27,14 @@ namespace utilmt
             if(!std::mutex::try_lock())
                 return false;
 
-            set_owner_id();
+            _set_owner_id();
             return true;
         }
 
         /// @brief Unlock the mutex
         void unlock()
         {
-            reset_owner_id();
+            _reset_owner_id();
             std::mutex::unlock();
         }
 
@@ -55,12 +55,12 @@ namespace utilmt
         }
 
     private:
-        void set_owner_id()
+        void _set_owner_id()
         {
             m_owner_id = std::this_thread::get_id();
         }
 
-        void reset_owner_id()
+        void _reset_owner_id()
         {
             m_owner_id = std::thread::id();
         }
