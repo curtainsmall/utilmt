@@ -1,10 +1,10 @@
 #pragma once
 
-#include <type_traits>
-#include <utility>
+#include <atomic>
 #include <mutex>
 #include <optional>
-#include <atomic>
+#include <type_traits>
+#include <utility>
 
 namespace utilmt
 {
@@ -79,7 +79,6 @@ namespace utilmt
         public:
             using value_type = T;
             using mutex_type = Mutex;
-            using self_type = guard_proxy<value_type, mutex_type>;
 
             friend struct guard<value_type, mutex_type>;
 
@@ -93,24 +92,16 @@ namespace utilmt
         public:
             ~guard_proxy() = default;
 
-            guard_proxy(const self_type&) = delete;
-            auto operator=(const self_type&) -> self_type & = delete;
+            guard_proxy(const guard_proxy&) = delete;
+            auto operator=(const guard_proxy&) -> guard_proxy & = delete;
 
-            guard_proxy(self_type&&) noexcept = default;
-            auto operator=(self_type&&) -> self_type & = default;
-
-            /// @brief Get the proxied value
-            /// @return Proxied value
-            [[nodiscard]]
-            auto get() -> value_type&
-            {
-                return *m_value_ptr;
-            }
+            guard_proxy(guard_proxy&&) noexcept = default;
+            auto operator=(guard_proxy&&) -> guard_proxy & = default;
 
             /// @brief Get the proxied value
             /// @return Proxied value
             [[nodiscard]]
-            auto get() const -> const value_type&
+            auto get() const -> value_type&
             {
                 return *m_value_ptr;
             }
@@ -118,15 +109,7 @@ namespace utilmt
             /// @brief Get the proxied value
             /// @return Proxied value pointer
             [[nodiscard]]
-            auto operator->() -> value_type*
-            {
-                return m_value_ptr;
-            }
-
-            /// @brief Get the proxied value
-            /// @return Proxied value pointer
-            [[nodiscard]]
-            auto operator->() const -> const value_type*
+            auto operator->() const ->  value_type*
             {
                 return m_value_ptr;
             }
@@ -134,15 +117,7 @@ namespace utilmt
             /// @brief Get the proxied value
             /// @return Proxied value
             [[nodiscard]]
-            auto operator*() -> value_type&
-            {
-                return get();
-            }
-
-            /// @brief Get the proxied value
-            /// @return Proxied value
-            [[nodiscard]]
-            auto operator*() const -> const value_type&
+            auto operator*() const ->  value_type&
             {
                 return get();
             }
@@ -154,7 +129,7 @@ namespace utilmt
             {
             }
 
-            guard_proxy(value_type& value, mutex_type& mutex, adopt_lock_t):
+            guard_proxy(value_type& value, mutex_type& mutex, std::adopt_lock_t):
                 m_lock(mutex, std::adopt_lock),
                 m_value_ptr(&value)
             {
@@ -175,7 +150,6 @@ namespace utilmt
     public:
         using value_type = T;
         using mutex_type = Mutex;
-        using self_type = guard<value_type, mutex_type>;
 
         /// @brief Proxy type for data read and write while the mutex is locked with RAII
         using proxy = internal::guard_proxy<value_type, mutex_type>;
@@ -193,11 +167,11 @@ namespace utilmt
 
         ~guard() = default;
 
-        guard(const self_type&) = delete;
-        auto operator=(const self_type&) -> self_type & = delete;
+        guard(const guard&) = delete;
+        auto operator=(const guard&) -> guard & = delete;
 
-        guard(self_type&&) noexcept = default;
-        auto operator=(self_type&&) noexcept -> self_type & = default;
+        guard(guard&&) noexcept = default;
+        auto operator=(guard&&) noexcept -> guard & = default;
 
         /// @brief Take over the ownership; This function blocks current thread
         /// @return Proxy
@@ -212,7 +186,7 @@ namespace utilmt
         {
             if(!m_mutex.try_lock())
                 return std::nullopt;
-            return proxy(m_value, m_mutex, proxy::adopt_lock);
+            return proxy(m_value, m_mutex, std::adopt_lock);
         }
 
     private:
